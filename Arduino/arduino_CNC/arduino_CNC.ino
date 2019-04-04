@@ -46,7 +46,7 @@ boolean verbose = false;
 
 void setup() {
   Serial.begin( 9600 );
-  
+  while (!Serial) ;
   penServo.attach(penServoPin);
   penServo.write(penZUp);
   delay(200);
@@ -83,6 +83,7 @@ void loop()
 
     while ( Serial.available()>0 ) {
       c = Serial.read();
+      Serial.print(c);
       if (( c == '\n') || (c == '\r') ) {             
         if ( lineIndex > 0 ) {                        
           line[ lineIndex ] = '\0';                   
