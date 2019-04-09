@@ -8,17 +8,18 @@ const int penZDown = 40;
 
 const int penServoPin = 6;
 
-const int stepsPerRevolution = 48; 
+const int stepsPerRevolution = 48;
 
-Servo penServo;  
+Servo penServo;
 
-Stepper myStepperY(stepsPerRevolution, 2,3,4,5);            
-Stepper myStepperX(stepsPerRevolution, 11,10,8,9);  
+Stepper myStepperY(stepsPerRevolution, 2, 3, 4, 5);
+Stepper myStepperX(stepsPerRevolution, 11, 10, 8, 9);
 
-struct point { 
-  float x; 
-  float y; 
-  float z; 
+struct point
+{
+  float x;
+  float y;
+  float z;
 };
 
 struct point actuatorPos;
@@ -40,37 +41,46 @@ float Zmax = 1;
 
 float Xpos = Xmin;
 float Ypos = Ymin;
-float Zpos = Zmax; 
+float Zpos = Zmax;
 
 boolean verbose = false;
 
-void setup() {
-  Serial.begin( 9600 );
-  while (!Serial) ;
+void setup()
+{
+  Serial.begin(9600);
+
+  //Wait until Serial becomes available
+  while (!Serial)
+    ;
+
+  //Servo Setup
   penServo.attach(penServoPin);
   penServo.write(penZUp);
   delay(200);
 
-  myStepperX.setSpeed(100 );
-  myStepperY.setSpeed(100);  
+  //Stepper Motor Setup
+  myStepperX.setSpeed(100);
+  myStepperY.setSpeed(100);
 
+  //Start up Message
   Serial.println("Mini CNC Plotter alive and kicking!");
-  Serial.print("X range is from "); 
-  Serial.print(Xmin); 
-  Serial.print(" to "); 
-  Serial.print(Xmax); 
-  Serial.println(" mm."); 
-  Serial.print("Y range is from "); 
-  Serial.print(Ymin); 
-  Serial.print(" to "); 
-  Serial.print(Ymax); 
-  Serial.println(" mm."); 
+  Serial.print("X range is from ");
+  Serial.print(Xmin);
+  Serial.print(" to ");
+  Serial.print(Xmax);
+  Serial.println(" mm.");
+  Serial.print("Y range is from ");
+  Serial.print(Ymin);
+  Serial.print(" to ");
+  Serial.print(Ymax);
+  Serial.println(" mm.");
 }
 
-void loop() 
+void loop()
 {
+
   delay(200);
-  char line[ LINE_BUFFER_LENGTH ];
+  char line[LINE_BUFFER_LENGTH];
   char c;
   int lineIndex;
   bool lineIsComment, lineSemiColon;
@@ -79,53 +89,70 @@ void loop()
   lineSemiColon = false;
   lineIsComment = false;
 
-  while (1) {
+  while (1)
+  {
 
-    while ( Serial.available()>0 ) {
+    while (Serial.available() > 0)
+    {
       c = Serial.read();
       Serial.print(c);
-      if (( c == '\n') || (c == '\r') ) {             
-        if ( lineIndex > 0 ) {                        
-          line[ lineIndex ] = '\0';                   
-          if (verbose) { 
-            Serial.print( "Received : "); 
-            Serial.println( line ); 
+
+      //Check if c is newline character
+      if ((c == '\n') || (c == '\r'))
+      {
+        //Check if there is data in the line
+        if (lineIndex > 0)
+        {
+          line[lineIndex] = '\0';
+          if (verbose)
+          {
+            Serial.print("Received : ");
+            Serial.println(line);
           }
-          processIncomingLine( line, lineIndex );
+          processIncomingLine(line, lineIndex);
           lineIndex = 0;
-        } 
-        else { 
-          
         }
+
         lineIsComment = false;
         lineSemiColon = false;
-        Serial.println("ok");    
-      } 
-      else {
-        if ( (lineIsComment) || (lineSemiColon) ) {   // Throw away all comment characters
-          if ( c == ')' )  lineIsComment = false;     // End of comment. Resume line.
-        } 
-        else {
-          if ( c <= ' ' ) {                           // Throw away whitepace and control characters
-          } 
-          else if ( c == '/' ) {                    // Block delete not supported. Ignore character.
-          } 
-          else if ( c == '(' ) {                    // Enable comments flag and ignore all characters until ')' or EOL.
+        Serial.println("ok");
+      }
+      else
+      {
+        if ((lineIsComment) || (lineSemiColon))
+        { // Throw away all comment characters
+          if (c == ')')
+            lineIsComment = false; // End of comment. Resume line.
+        }
+        else
+        {
+          if (c <= ' ')
+          { // Throw away whitepace and control characters
+          }
+          else if (c == '/')
+          { // Block delete not supported. Ignore character.
+          }
+          else if (c == '(')
+          { // Enable comments flag and ignore all characters until ')' or EOL.
             lineIsComment = true;
-          } 
-          else if ( c == ';' ) {
+          }
+          else if (c == ';')
+          {
             lineSemiColon = true;
-          } 
-          else if ( lineIndex >= LINE_BUFFER_LENGTH-1 ) {
-            Serial.println( "ERROR - lineBuffer overflow" );
+          }
+          else if (lineIndex >= LINE_BUFFER_LENGTH - 1)
+          {
+            Serial.println("ERROR - lineBuffer overflow");
             lineIsComment = false;
             lineSemiColon = false;
-          } 
-          else if ( c >= 'a' && c <= 'z' ) {        // Upcase lowercase
-            line[ lineIndex++ ] = c-'a'+'A';
-          } 
-          else {
-            line[ lineIndex++ ] = c;
+          }
+          else if (c >= 'a' && c <= 'z')
+          { // Upcase lowercase
+            line[lineIndex++] = c - 'a' + 'A';
+          }
+          else
+          {
+            line[lineIndex++] = c;
           }
         }
       }
@@ -133,15 +160,16 @@ void loop()
   }
 }
 
-void processIncomingLine( char* line, int charNB ) {
+void processIncomingLine(char *line, int charNB)
+{
   int currentIndex = 0;
-  char buffer[ 64 ];                                 // Hope that 64 is enough for 1 parameter
+  char buffer[64]; // Hope that 64 is enough for 1 parameter
   struct point newPos;
 
   newPos.x = 0.0;
   newPos.y = 0.0;
 
-  //  Needs to interpret 
+  //  Needs to interpret
   //  G1 for moving
   //  G4 P300 (wait 150ms)
   //  G1 X60 Y30
@@ -151,40 +179,47 @@ void processIncomingLine( char* line, int charNB ) {
   //  Discard anything with a (
   //  Discard any other command!
 
-  while( currentIndex < charNB ) {
-    switch ( line[ currentIndex++ ] ) {              // Select command, if any
+  while (currentIndex < charNB)
+  {
+    switch (line[currentIndex++])
+    { // Select command, if any
     case 'U':
-      penUp(); 
+      penUp();
       break;
     case 'D':
-      penDown(); 
+      penDown();
       break;
     case 'G':
-      buffer[0] = line[ currentIndex++ ];          // /!\ Dirty - Only works with 2 digit commands
-      //      buffer[1] = line[ currentIndex++ ];
-      //      buffer[2] = '\0';
+
+      //Puts the number after G into buffer
+      buffer[0] = line[currentIndex++]; // /!\ Dirty - Only works with 2 digit commands
+      //Ends the buffer
       buffer[1] = '\0';
 
-      switch ( atoi( buffer ) ){                   // Select G command
-      case 0:                                   // G00 & G01 - Movement or fast movement. Same here
+      switch (atoi(buffer))
+      {       // Select G command
+      case 0: // G00 & G01 - Movement or fast movement. Same here
       case 1:
         // /!\ Dirty - Suppose that X is before Y
-        char* indexX = strchr( line+currentIndex, 'X' );  // Get X/Y position in the string (if any)
-        char* indexY = strchr( line+currentIndex, 'Y' );
-        if ( indexY <= 0 ) {
-          newPos.x = atof( indexX + 1); 
+        char *indexX = strchr(line + currentIndex, 'X'); // Get X/Y position in the string (if any)
+        char *indexY = strchr(line + currentIndex, 'Y');
+        if (indexY <= 0)
+        {
+          newPos.x = atof(indexX + 1);
           newPos.y = actuatorPos.y;
-        } 
-        else if ( indexX <= 0 ) {
-          newPos.y = atof( indexY + 1);
-          newPos.x = actuatorPos.x;
-        } 
-        else {
-          newPos.y = atof( indexY + 1);
-          indexY = '\0';
-          newPos.x = atof( indexX + 1);
         }
-        drawLine(newPos.x, newPos.y );
+        else if (indexX <= 0)
+        {
+          newPos.y = atof(indexY + 1);
+          newPos.x = actuatorPos.x;
+        }
+        else
+        {
+          newPos.y = atof(indexY + 1);
+          indexY = '\0';
+          newPos.x = atof(indexX + 1);
+        }
+        drawLine(newPos.x, newPos.y);
         //        Serial.println("ok");
         actuatorPos.x = newPos.x;
         actuatorPos.y = newPos.y;
@@ -192,44 +227,43 @@ void processIncomingLine( char* line, int charNB ) {
       }
       break;
     case 'M':
-      buffer[0] = line[ currentIndex++ ];        // /!\ Dirty - Only works with 3 digit commands
-      buffer[1] = line[ currentIndex++ ];
-      buffer[2] = line[ currentIndex++ ];
+      buffer[0] = line[currentIndex++]; // /!\ Dirty - Only works with 3 digit commands
+      buffer[1] = line[currentIndex++];
+      buffer[2] = line[currentIndex++];
       buffer[3] = '\0';
-      switch ( atoi( buffer ) ){
+      switch (atoi(buffer))
+      {
       case 300:
+      {
+        char *indexS = strchr(line + currentIndex, 'S');
+        float Spos = atof(indexS + 1);
+        //          Serial.println("ok");
+        if (Spos == 30)
         {
-          char* indexS = strchr( line+currentIndex, 'S' );
-          float Spos = atof( indexS + 1);
-          //          Serial.println("ok");
-          if (Spos == 30) { 
-            penDown(); 
-          }
-          if (Spos == 50) { 
-            penUp(); 
-          }
-          break;
+          penDown();
         }
-      case 114:                                // M114 - Repport position
-        Serial.print( "Absolute position : X = " );
-        Serial.print( actuatorPos.x );
-        Serial.print( "  -  Y = " );
-        Serial.println( actuatorPos.y );
+        if (Spos == 50)
+        {
+          penUp();
+        }
+        break;
+      }
+      case 114: // M114 - Repport position
+        Serial.print("Absolute position : X = ");
+        Serial.print(actuatorPos.x);
+        Serial.print("  -  Y = ");
+        Serial.println(actuatorPos.y);
         break;
       default:
-        Serial.print( "Command not recognized : M");
-        Serial.println( buffer );
+        Serial.print("Command not recognized : M");
+        Serial.println(buffer);
       }
     }
   }
-
-
-
 }
 
-
-
-void drawLine(float x1, float y1) {
+void drawLine(float x1, float y1)
+{
 
   if (verbose)
   {
@@ -238,20 +272,23 @@ void drawLine(float x1, float y1) {
     Serial.print(",");
     Serial.print(y1);
     Serial.println("");
-  }  
+  }
 
-  
-  if (x1 >= Xmax) { 
-    x1 = Xmax; 
+  if (x1 >= Xmax)
+  {
+    x1 = Xmax;
   }
-  if (x1 <= Xmin) { 
-    x1 = Xmin; 
+  if (x1 <= Xmin)
+  {
+    x1 = Xmin;
   }
-  if (y1 >= Ymax) { 
-    y1 = Ymax; 
+  if (y1 >= Ymax)
+  {
+    y1 = Ymax;
   }
-  if (y1 <= Ymin) { 
-    y1 = Ymin; 
+  if (y1 <= Ymin)
+  {
+    y1 = Ymin;
   }
 
   if (verbose)
@@ -273,41 +310,47 @@ void drawLine(float x1, float y1) {
   }
 
   //  Convert coordinates to steps
-  x1 = (int)(x1*StepsPerMillimeterX);
-  y1 = (int)(y1*StepsPerMillimeterY);
+  x1 = (int)(x1 * StepsPerMillimeterX);
+  y1 = (int)(y1 * StepsPerMillimeterY);
   float x0 = Xpos;
   float y0 = Ypos;
 
   //  Let's find out the change for the coordinates
-  long dx = abs(x1-x0);
-  long dy = abs(y1-y0);
-  int sx = x0<x1 ? StepInc : -StepInc;
-  int sy = y0<y1 ? StepInc : -StepInc;
+  long dx = abs(x1 - x0);
+  long dy = abs(y1 - y0);
+  int sx = x0 < x1 ? StepInc : -StepInc;
+  int sy = y0 < y1 ? StepInc : -StepInc;
 
   long i;
   long over = 0;
 
-  if (dx > dy) {
-    for (i=0; i<dx; ++i) {
+  if (dx > dy)
+  {
+    for (i = 0; i < dx; ++i)
+    {
       myStepperX.step(sx);
-      over+=dy;
-      if (over>=dx) {
-        over-=dx;
+      over += dy;
+      if (over >= dx)
+      {
+        over -= dx;
         myStepperY.step(sy);
       }
       delay(StepDelay);
     }
   }
-  else {
-    for (i=0; i<dy; ++i) {
+  else
+  {
+    for (i = 0; i < dy; ++i)
+    {
       myStepperY.step(sy);
-      over+=dx;
-      if (over>=dy) {
-        over-=dy;
+      over += dx;
+      if (over >= dy)
+      {
+        over -= dy;
         myStepperX.step(sx);
       }
       delay(StepDelay);
-    }    
+    }
   }
 
   if (verbose)
@@ -328,27 +371,29 @@ void drawLine(float x1, float y1) {
     Serial.println(")");
   }
 
-  
   delay(LineDelay);
-  
+
   Xpos = x1;
   Ypos = y1;
 }
 
-
-void penUp() { 
-  penServo.write(penZUp); 
-  delay(LineDelay); 
-  Zpos=Zmax; 
-  if (verbose) { 
-    Serial.println("Pen up!"); 
-  } 
+void penUp()
+{
+  penServo.write(penZUp);
+  delay(LineDelay);
+  Zpos = Zmax;
+  if (verbose)
+  {
+    Serial.println("Pen up!");
+  }
 }
-void penDown() { 
-  penServo.write(penZDown); 
-  delay(LineDelay); 
-  Zpos=Zmin; 
-  if (verbose) { 
-    Serial.println("Pen down."); 
-  } 
+void penDown()
+{
+  penServo.write(penZDown);
+  delay(LineDelay);
+  Zpos = Zmin;
+  if (verbose)
+  {
+    Serial.println("Pen down.");
+  }
 }

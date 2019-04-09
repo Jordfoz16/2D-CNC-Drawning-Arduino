@@ -1,6 +1,6 @@
 
-# Created by https://www.gitignore.io/api/macos,windows,processing
-# Edit at https://www.gitignore.io/?templates=macos,windows,processing
+# Created by https://www.gitignore.io/api/macos,windows,processing,visualstudiocode
+# Edit at https://www.gitignore.io/?templates=macos,windows,processing,visualstudiocode
 
 ### macOS ###
 # General
@@ -40,6 +40,17 @@ application.windows32
 application.windows64
 application.macosx
 
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -65,4 +76,10 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.gitignore.io/api/macos,windows,processing
+# End of https://www.gitignore.io/api/macos,windows,processing,visualstudiocode
+Arduino/arduino_CNC/.vscode/arduino.json
+Arduino/arduino_CNC/.vscode/c_cpp_properties.json
+Arduino/arduino_CNC/.vscode/launch.json
+Arduino/arduino_CNC/.vscode/ipch/f31ea88519a7e0e1/mmap_address.bin
+Arduino/arduino_CNC/.vscode/ipch/f31ea88519a7e0e1/ARDUINO_CNC.ipch
+Arduino/arduino_CNC/.vscode/ipch/c07bdbeca63ed58e/mmap_address.bin
