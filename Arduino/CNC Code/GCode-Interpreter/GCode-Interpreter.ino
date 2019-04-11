@@ -29,10 +29,10 @@ Servo penServo;
 //---------Stepper Values------------
 /////////////////////////////////////
 
-const int stepsPerRevolution = 50;
+const int stepsPerRevolution = 20;
 
-Stepper stepperY(stepsPerRevolution, 3, 4, 5, 6);
-Stepper stepperX(stepsPerRevolution, 7, 8, 9, 10);
+Stepper stepperY(stepsPerRevolution, 4, 5, 6, 7);
+Stepper stepperX(stepsPerRevolution, 8, 9, 10, 11);
 
 /////////////////////////////////////
 //---------Config Settings-----------
@@ -43,8 +43,8 @@ int stepDelay = 0;
 int lineDelay = 50;
 int penDelay = 50;
 
-float stepsPerMillimeterX = 6.0;
-float stepsPerMillimeterY = 6.0;
+float stepsPerMillimeterX = 40.0;
+float stepsPerMillimeterY = 40.0;
 
 float xMin = 0;
 float xMax = 40;
