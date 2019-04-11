@@ -10,7 +10,7 @@ struct vector3
     float z;
 };
 
-boolean logging = false;
+boolean logging = true;
 
 /////////////////////////////////////
 //---------Servo Values--------------
@@ -84,6 +84,9 @@ void setup(){
 
 void loop(){
 
+  while(1){
+    formatInput();
+  }
 }
 
 void startUpMessage(){
@@ -113,8 +116,8 @@ void formatInput(){
     
     char inputLine[MAX_BUFFER_LENGTH];
     char c;
-    int lineLength;
-    boolean lineComment, lineSemiColon;
+    int lineLength = 0;
+    boolean lineComment = false, lineSemiColon = false;
 
     //Loop while data is being received
     while(Serial.available() > 0){
@@ -137,15 +140,15 @@ void formatInput(){
                 
                 //Sends the formatted line for processing
                 processLine(inputLine, lineLength);
+                Serial.println("Line Processed");
                 lineLength = 0;
             }
 
             lineComment = false;
             lineSemiColon = false;
-            Serial.println("Line Formatted");
 
         }else{
-
+            
             //Remove all unnecessary characters
             //Only addes characters that are needed to the array
 
@@ -170,17 +173,20 @@ void formatInput(){
                     lineSemiColon = false;
                 }else if (c >= 'a' && c <= 'z'){
                     //Convert the line to uppercase
-                    char uppercase = c - 'a' + 'A';
-                    //Increases line length
-                    lineLength++;
-
+                    char upper = c - 'a' + 'A';
+                    
                     //Add the character to the array
-                    inputLine[lineLength] = c;
-                }else{
+                    inputLine[lineLength] = upper;
+
                     //Increases line length
                     lineLength++;
+                    
+                }else{
                     //Character is already uppercase
                     inputLine[lineLength] = c;
+
+                    //Increases line length
+                    lineLength++;
                 }
             }
         }
@@ -188,7 +194,7 @@ void formatInput(){
 }
 
 void processLine(char *inputLine, int lineLength){
-
+    
     int index = 0;
 
     //Max length for one command
@@ -206,7 +212,7 @@ void processLine(char *inputLine, int lineLength){
             G1 - Fast Movement
         M - Miscellaneous function
     */
-
+              
    while (index < lineLength){
        switch (inputLine[index++])
        {
@@ -215,7 +221,7 @@ void processLine(char *inputLine, int lineLength){
             buffer[0] = inputLine[index++];
             //Puts \0 to end the command
             buffer[1] = '\0';
-
+            
             //Gets the integer value
             switch (atoi(buffer)){
                 //G0 and G1 do the same in this program
@@ -256,10 +262,9 @@ void processLine(char *inputLine, int lineLength){
                     break;
             }
             break;
-       
-       default:
-            Serial.print("Command not recognized: ");
-            Serial.println(buffer);
+
+            case 'M':
+
             break;
        }
    }
@@ -357,7 +362,7 @@ void drawLine(float xa, float ya){
     }
 
     if(logging){
-        Serial.print("Moving to X=");
+        Serial.print("Moving to (");
         Serial.print(x0);
         Serial.print(" , ");
         Serial.print(y0);

@@ -43,7 +43,7 @@ float Xpos = Xmin;
 float Ypos = Ymin;
 float Zpos = Zmax;
 
-boolean verbose = false;
+boolean verbose = true;
 
 void setup()
 {
@@ -196,6 +196,8 @@ void processIncomingLine(char *line, int charNB)
       //Ends the buffer
       buffer[1] = '\0';
 
+       Serial.println(currentIndex);
+      
       switch (atoi(buffer))
       {       // Select G command
       case 0: // G00 & G01 - Movement or fast movement. Same here
