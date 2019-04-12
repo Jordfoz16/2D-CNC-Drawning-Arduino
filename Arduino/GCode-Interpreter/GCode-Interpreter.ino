@@ -31,7 +31,7 @@ Servo penServo;
 
 const int stepsPerRevolution = 20;
 
-Stepper stepperY(stepsPerRevolution, 4, 5, 6, 7);
+Stepper stepperY(stepsPerRevolution, 5, 4, 3, 2);
 Stepper stepperX(stepsPerRevolution, 8, 9, 10, 11);
 
 /////////////////////////////////////
@@ -39,7 +39,7 @@ Stepper stepperX(stepsPerRevolution, 8, 9, 10, 11);
 /////////////////////////////////////
 
 float stepInc = 1;
-int stepDelay = 0;
+int stepDelay = 5;
 int lineDelay = 50;
 int penDelay = 50;
 
@@ -57,6 +57,7 @@ float zMax = 1;
 //---------Position Settings---------
 /////////////////////////////////////
 
+//Current Position
 float xPos = xMin;
 float yPos = yMin;
 float zPos = zMax;
@@ -112,7 +113,7 @@ void startUpMessage(){
 
 void formatInput(){
 
-    delay(200);
+    delay(50);
     
     char inputLine[MAX_BUFFER_LENGTH];
     char c;
@@ -140,10 +141,10 @@ void formatInput(){
                 
                 //Sends the formatted line for processing
                 processLine(inputLine, lineLength);
-                Serial.println("Line Processed");
                 lineLength = 0;
             }
 
+            Serial.println("Next Command");
             lineComment = false;
             lineSemiColon = false;
 
@@ -200,84 +201,173 @@ void processLine(char *inputLine, int lineLength){
     //Max length for one command
     char buffer[64];
 
-    //Target position setup
-    struct vector3 targetPosition;
-    targetPosition.x = 0.0;
-    targetPosition.y = 0.0;
-
     /*
         Command List
         G - Movement Command
-            G0 - Slow Movement
-            G1 - Fast Movement
+            G00 - Slow Movement
+            G10 - Fast Movement
+            G20 - Setting position
+            G30 - Go Home
         M - Miscellaneous function
     */
-              
+
+   char* indexX;
+   char* indexY;
+    
    while (index < lineLength){
+       
        switch (inputLine[index++])
        {
+        
         case 'G':
             //Loads the number after G into buffer
             buffer[0] = inputLine[index++];
             //Puts \0 to end the command
             buffer[1] = '\0';
-            
+
+            //Target position setup
+            struct vector3 targetPosition;
+            targetPosition.x = 0.0;
+            targetPosition.y = 0.0;
+
+            // X must come before Y
+            //Gets the x position from the string
+            indexX = strchr(inputLine + index, 'X');
+            //Gets the y position from the string
+            indexY = strchr(inputLine + index, 'Y');
+
+            if(indexY <= 0){
+                //If there is no Y then it loads the X
+                targetPosition.x = atof(indexX + 1);
+                targetPosition.y = penPosition.y;
+
+            }else if(indexX <= 0){
+                //If there is no X then it loads the Y
+                targetPosition.x = penPosition.x;
+                targetPosition.y = atof(indexY + 1);
+
+            }else{
+                //Gets the Y value first to prevent the X value from loading Y
+                targetPosition.y = atof(indexY + 1);
+                //Ends the array at the Y index
+                indexY = '\0';
+                //Gets the X value
+                targetPosition.x = atof(indexX + 1);
+            }
+
             //Gets the integer value
             switch (atoi(buffer)){
                 //G0 and G1 do the same in this program
-                case 0:
-                case 1:
-                    // X must come before Y
-
-                    //Gets the x position from the string
-                    char *indexX = strchr(inputLine + index, 'X');
-                    //Gets the y position from the string
-                    char *indexY = strchr(inputLine + index, 'Y');
-
-                    if(indexY <= 0){
-                        //If there is no Y then it loads the X
-                        targetPosition.x = atof(indexX + 1);
-                        targetPosition.y = penPosition.y;
-
-                    }else if(indexX <= 0){
-                        //If there is no X then it loads the Y
-                        targetPosition.x = penPosition.x;
-                        targetPosition.y = atof(indexY + 1);
-
-                    }else{
-                        //Gets the Y value first to prevent the X value from loading Y
-                        targetPosition.y = atof(indexY + 1);
-                        //Ends the array at the Y index
-                        indexY = '\0';
-                        //Gets the X value
-                        targetPosition.x = atof(indexX + 1);
-                    }
-                    
+                 case 1:
                     //Moves the pen
                     drawLine(targetPosition.x, targetPosition.y);
-                    //Assumes the pen has moved to the new position
+                    //Assumes the pen has moved to the newposition
                     penPosition.x = targetPosition.x;
                     penPosition.y = targetPosition.y;
+                     
+                 break;
 
-                    break;
+                 case 2:
+                 
+                    movePen(targetPosition.x, targetPosition.y);
+                 
+                 break;
+
+                 case 3:
+                  Serial.println("Command 3");
             }
-            break;
-
-            case 'M':
-
-            break;
        }
    }
 }
 
-void drawLine(float xa, float ya){
+void movePen(float xa, float ya){
 
     if(logging){
+        //Print the movement location for the pen
         Serial.print("xa, ya: ");
         Serial.print(xa);
         Serial.print(", ");
         Serial.println(ya);
     }
+
+    //Convert corrdinates to steps
+    xa = (int)(xa * stepsPerMillimeterX);
+    ya = (int)(ya * stepsPerMillimeterY);
+    float x0 = 0;
+    float y0 = 0;
+
+    //Find the change in position
+    long dx = abs(xa);
+    long dy = abs(ya);
+
+    //Get the direction of the step
+    int stepX = stepInc;
+    int stepY = stepInc;
+
+    if(x0 > xa){
+        stepX = -stepInc;
+    }
+    if(y0 > ya){
+        stepY = -stepInc;
+    }
+
+    long i;
+    long over = 0;
+
+    //Move X axis first
+    if(dx > dy){
+        for(i = 0; i < dx; i++){
+            stepperX.step(stepX);
+
+            //Allows the x and y to finish at the same time
+            over += dy;
+            if(over >= dx){
+                over -= dx;
+                stepperY.step(stepY);
+            }
+            delay(stepDelay);
+        }
+    }else{
+        //Else the Y axis moves first
+        for(i = 0; i < dy; i++){
+            stepperY.step(stepY);
+
+            //Allows the x and y to finish at the same time
+            over += dx;
+            if(over >= dy){
+                over -= dy;
+                stepperX.step(stepX);
+            }
+            delay(stepDelay);
+        }
+    }
+
+    if(logging){
+        Serial.print("Moving from (");
+        Serial.print(x0);
+        Serial.print(", ");
+        Serial.print(y0);
+        Serial.println(")");
+    }
+
+    if(logging){
+        //Prints the change in the position
+        Serial.print("Moving to (");
+        Serial.print(dx);
+        Serial.print(", ");
+        Serial.print(dy);
+        Serial.println(")");
+    }
+    
+    xPos = 0;
+    yPos = 0;
+}
+
+void returnHome(){
+
+}
+
+void drawLine(float xa, float ya){
 
     //Keep the pen position within max limits
     if(xa >= xMax) xa = xMax;
@@ -330,7 +420,7 @@ void drawLine(float xa, float ya){
         for(i = 0; i < dx; i++){
             stepperX.step(stepX);
 
-            //NOT SURE WHAT THIS DOES NEED TO LOOK INTO IT
+            //Allows the x and y to finish at the same time
             over += dy;
             if(over >= dx){
                 over -= dx;
@@ -343,7 +433,7 @@ void drawLine(float xa, float ya){
         for(i = 0; i < dy; i++){
             stepperY.step(stepY);
 
-            //NOT SURE WHAT THIS DOES NEED TO LOOK INTO IT
+            //Allows the x and y to finish at the same time
             over += dx;
             if(over >= dy){
                 over -= dy;
@@ -354,18 +444,19 @@ void drawLine(float xa, float ya){
     }
 
     if(logging){
-        //Prints the change in the position
-        Serial.print("dx, dy: ");
-        Serial.print(dx);
+        Serial.print("Moving from (");
+        Serial.print(x0);
         Serial.print(", ");
-        Serial.println(dy);
+        Serial.print(y0);
+        Serial.println(")");
     }
 
     if(logging){
+        //Prints the change in the position
         Serial.print("Moving to (");
-        Serial.print(x0);
-        Serial.print(" , ");
-        Serial.print(y0);
+        Serial.print(dx);
+        Serial.print(", ");
+        Serial.print(dy);
         Serial.println(")");
     }
 
