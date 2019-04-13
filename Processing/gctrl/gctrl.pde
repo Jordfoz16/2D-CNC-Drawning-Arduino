@@ -58,7 +58,7 @@ void draw()
   text("1: set speed to 0.1mm per jog", 12, y); y += dy;
   text("2: set speed to 1.0mm per jog", 12, y); y += dy;
   text("3: set speed to 10.0mm per jog", 12, y); y += dy;
-  text("arrow keys: jog in x-y plane", 12, y); y += dy;
+  text("arrow keys: set home in x-y plane", 12, y); y += dy;
   text("page up & page down: jog in z axis", 12, y); y += dy;
   text("h: go home", 12, y); y += dy;
   text("g: stream a g-code file", 12, y); y += dy;
@@ -133,6 +133,6 @@ void serialEvent(Serial p)
   String s = p.readStringUntil('\n');
   println(s.trim());
   
-  if (s.trim().startsWith("ok")) stream();
+  if (s.trim().startsWith("Next Command")) stream();
   if (s.trim().startsWith("error")) stream(); // XXX: really?
 }

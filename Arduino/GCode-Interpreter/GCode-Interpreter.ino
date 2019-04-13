@@ -29,7 +29,7 @@ Servo penServo;
 //---------Stepper Values------------
 /////////////////////////////////////
 
-const int stepsPerRevolution = 20;
+const int stepsPerRevolution = 200;
 
 Stepper stepperY(stepsPerRevolution, 5, 4, 3, 2);
 Stepper stepperX(stepsPerRevolution, 8, 9, 10, 11);
@@ -86,6 +86,7 @@ void setup(){
 void loop(){
 
   while(1){
+    while(!Serial);
     formatInput();
   }
 }
@@ -113,7 +114,7 @@ void startUpMessage(){
 
 void formatInput(){
 
-    delay(50);
+    delay(200);
     
     char inputLine[MAX_BUFFER_LENGTH];
     char c;
@@ -125,7 +126,6 @@ void formatInput(){
 
         //Loads the next character of the line
         c = Serial.read();
-        Serial.print(c);
 
         //Checks if c is a newline
         if((c == '\n') || (c == '\r')){
@@ -268,13 +268,15 @@ void processLine(char *inputLine, int lineLength){
                  break;
 
                  case 2:
-                 
+                    
                     movePen(targetPosition.x, targetPosition.y);
                  
                  break;
 
                  case 3:
-                  Serial.println("Command 3");
+                    returnHome();
+
+                 break;
             }
        }
    }
@@ -364,7 +366,7 @@ void movePen(float xa, float ya){
 }
 
 void returnHome(){
-
+    drawLine(0, 0);
 }
 
 void drawLine(float xa, float ya){
