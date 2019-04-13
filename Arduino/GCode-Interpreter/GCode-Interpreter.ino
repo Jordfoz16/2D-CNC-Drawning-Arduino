@@ -18,7 +18,7 @@ boolean logging = true;
 
 //Servo values for pen up and down
 const int zAxisUP = 80;
-const int zAxisDOWN = 40;
+const int zAxisDOWN = 0;
 
 //Servo pin number
 const int servoPin = 6;
@@ -39,7 +39,7 @@ Stepper stepperX(stepsPerRevolution, 8, 9, 10, 11);
 /////////////////////////////////////
 
 float stepInc = 1;
-int stepDelay = 5;
+int stepDelay = 2;
 int lineDelay = 50;
 int penDelay = 50;
 
@@ -278,6 +278,22 @@ void processLine(char *inputLine, int lineLength){
 
                  break;
             }
+
+            case 'M':
+              //Loads the number after M into buffer
+              buffer[0] = inputLine[index++];
+              //Puts \0 to end the command
+              buffer[1] = '\0';
+
+              switch(atoi(buffer)){
+                case 1:
+                  penUp();
+                break;
+
+                case 2:
+                  penDown();
+                break;
+              }
        }
    }
 }
@@ -475,7 +491,7 @@ void penUp(){
     zPos = zMax;
 
     if(logging){
-        Serial.println("Pen UP");
+        Serial.println("Pen: Up");
     }
 }
 
@@ -487,6 +503,6 @@ void penDown(){
     zPos = zMin;
 
     if(logging){
-        Serial.println("Pen DOWN");
+        Serial.println("Pen: Down");
     }
 }
