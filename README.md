@@ -30,9 +30,13 @@ The G-Code should now be ready to use.
 ## Resources:
 ### Software:
 Arduino: https://www.arduino.cc/en/main/software
+
 Processing: https://processing.org/download/
+
 Ink Scape: https://inkscape.org/
+
 DXF2GCODE: https://sourceforge.net/projects/dxf2gcode/
+
 
 ### Inspired by: 
 Using code from this project but I have modified the code to suit this project https://www.instructables.com/id/DIY-MINI-CNC-DRAWING-MACHINE/
