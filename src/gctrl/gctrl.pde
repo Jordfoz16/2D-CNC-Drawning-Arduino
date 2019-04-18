@@ -59,7 +59,7 @@ void draw()
   text("2: set speed to 1.0mm per jog", 12, y); y += dy;
   text("3: set speed to 10.0mm per jog", 12, y); y += dy;
   text("arrow keys: set home in x-y plane", 12, y); y += dy;
-  text("page up & page down: jog in z axis", 12, y); y += dy;
+  text("< & >: jog in z axis", 12, y); y += dy;
   text("h: go home", 12, y); y += dy;
   text("g: stream a g-code file", 12, y); y += dy;
   text("x: stop streaming g-code (this is NOT immediate)", 12, y); y += dy;
@@ -79,8 +79,8 @@ void keyPressed()
     if (keyCode == RIGHT) port.write("G20 X" + speed + " Y0.000 Z0.000\n");
     if (keyCode == UP) port.write("G20 X0.000 Y" + speed + " Z0.000\n");
     if (keyCode == DOWN) port.write("G20 X0.000 Y-" + speed + " Z0.000\n");
-    if (keyCode == KeyEvent.VK_PAGE_UP) port.write("G91\nG20\nG00 X0.000 Y0.000 Z" + speed + "\n");
-    if (keyCode == KeyEvent.VK_PAGE_DOWN) port.write("G91\nG20\nG00 X0.000 Y0.000 Z-" + speed + "\n");
+    if (keyCode == ',') port.write("M3\n");
+    if (keyCode == '.') port.write("M4\n");
     if (key == 'h') port.write("G30\n");
     if (key == '0') openSerialPort();
     if (key == 'p') selectSerialPort();

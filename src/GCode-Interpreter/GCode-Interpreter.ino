@@ -287,11 +287,19 @@ void processLine(char *inputLine, int lineLength){
 
               switch(atoi(buffer)){
                 case 1:
-                  penUp();
+                    penUp();
                 break;
 
                 case 2:
-                  penDown();
+                    penDown();
+                break;
+
+                case 3:
+                    jogPenUp();
+                break;
+
+                case 4:
+                    jogPenDown();
                 break;
               }
        }
@@ -505,4 +513,14 @@ void penDown(){
     if(logging){
         Serial.println("Pen: Down");
     }
+}
+
+void jogPenUp(){
+    penServo.write(zAxisDOWN++);
+    delay(lineDelay);
+}
+
+void jogPenDown(){
+    penServo.write(zAxisDOWN--);
+    delay(lineDelay);
 }

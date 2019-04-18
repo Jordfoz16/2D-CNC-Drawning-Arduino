@@ -83,3 +83,4 @@ Arduino/arduino_CNC/.vscode/launch.json
 Arduino/arduino_CNC/.vscode/ipch/f31ea88519a7e0e1/mmap_address.bin
 Arduino/arduino_CNC/.vscode/ipch/f31ea88519a7e0e1/ARDUINO_CNC.ipch
 Arduino/arduino_CNC/.vscode/ipch/c07bdbeca63ed58e/mmap_address.bin
+*.bin
