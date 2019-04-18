@@ -1,10 +1,3 @@
-(Generated with: DXF2GCODE, Version: Py3.6.7 PyQt5.11.3, Date: $Date: Thu Jan 3 16:29:29 2019 +0100 $)
-(Created from file: C:/Users/Jordan Foster/Desktop/applepay.dxf)
-(Output format description: G-CODE for LinuxCNC)
-(Time: Sat Apr 13 16:54:44 2019)
-
-
-
 M   2.000 
 
 (*** LAYER: Layer_1 ***)
