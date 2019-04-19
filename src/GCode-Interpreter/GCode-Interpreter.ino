@@ -17,8 +17,8 @@ boolean logging = true;
 /////////////////////////////////////
 
 //Servo values for pen up and down
-const int zAxisUP = 80;
-const int zAxisDOWN = 0;
+int zAxisUP = 20;
+int zAxisDOWN = 0;
 
 //Servo pin number
 const int servoPin = 6;
@@ -29,18 +29,19 @@ Servo penServo;
 //---------Stepper Values------------
 /////////////////////////////////////
 
-const int stepsPerRevolution = 200;
+const int stepsPerRevolution = 20;
 
 Stepper stepperY(stepsPerRevolution, 5, 4, 3, 2);
-Stepper stepperX(stepsPerRevolution, 8, 9, 10, 11);
+Stepper stepperX(stepsPerRevolution, 11, 10, 9, 8);
+
 
 /////////////////////////////////////
 //---------Config Settings-----------
 /////////////////////////////////////
 
 float stepInc = 1;
-int stepDelay = 2;
-int lineDelay = 50;
+int stepDelay = 1;
+int lineDelay = 40;
 int penDelay = 50;
 
 float stepsPerMillimeterX = 40.0;
@@ -77,8 +78,8 @@ void setup(){
     delay(200);
 
     //Stepper motor setup
-    stepperX.setSpeed(100);
-    stepperY.setSpeed(100);
+    stepperX.setSpeed(1500);
+    stepperY.setSpeed(1500);
 
     startUpMessage();
 }
@@ -287,11 +288,11 @@ void processLine(char *inputLine, int lineLength){
 
               switch(atoi(buffer)){
                 case 1:
-                    penUp();
+                    penDown();
                 break;
 
                 case 2:
-                    penDown();
+                    penUp();
                 break;
 
                 case 3:
@@ -516,11 +517,13 @@ void penDown(){
 }
 
 void jogPenUp(){
-    penServo.write(zAxisDOWN++);
+    zAxisDOWN++;
+    penServo.write(zAxisDOWN);
     delay(lineDelay);
 }
 
 void jogPenDown(){
-    penServo.write(zAxisDOWN--);
+    zAxisDOWN--;
+    penServo.write(zAxisDOWN);
     delay(lineDelay);
 }

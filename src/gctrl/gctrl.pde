@@ -59,13 +59,16 @@ void draw()
   text("2: set speed to 1.0mm per jog", 12, y); y += dy;
   text("3: set speed to 10.0mm per jog", 12, y); y += dy;
   text("arrow keys: set home in x-y plane", 12, y); y += dy;
-  text("< & >: jog in z axis", 12, y); y += dy;
+  text("q & e: jog in z axis", 12, y); y += dy;
+  text("w & s: move z axis up & down", 12, y); y += dy;
   text("h: go home", 12, y); y += dy;
   text("g: stream a g-code file", 12, y); y += dy;
   text("x: stop streaming g-code (this is NOT immediate)", 12, y); y += dy;
   y = height - dy;
   text("current jog speed: " + speed + " mm per step", 12, y); y -= dy;
   text("current serial port: " + portname, 12, y); y -= dy;
+  
+  text("Line number: " + i, 365, 24);
 }
 
 void keyPressed()
@@ -75,12 +78,14 @@ void keyPressed()
   if (key == '3') speed = 10.0;
   
   if (!streaming) {
-    if (keyCode == LEFT) port.write("G20 X-" + speed + " Y0.000 Z0.000\n");
-    if (keyCode == RIGHT) port.write("G20 X" + speed + " Y0.000 Z0.000\n");
-    if (keyCode == UP) port.write("G20 X0.000 Y" + speed + " Z0.000\n");
-    if (keyCode == DOWN) port.write("G20 X0.000 Y-" + speed + " Z0.000\n");
-    if (keyCode == ',') port.write("M3\n");
-    if (keyCode == '.') port.write("M4\n");
+    if (keyCode == LEFT) port.write("G20X-" + speed + "Y0.000\n");
+    if (keyCode == RIGHT) port.write("G20X" + speed + "Y0.000\n");
+    if (keyCode == UP) port.write("G20X0.000Y" + speed + "\n");
+    if (keyCode == DOWN) port.write("G20X0.000Y-" + speed + "\n");
+    if (key == 'q') port.write("M3\n");
+    if (key == 'e') port.write("M4\n");
+    if (key == 'w') port.write("M2\n");
+    if (key == 's') port.write("M1\n");
     if (key == 'h') port.write("G30\n");
     if (key == '0') openSerialPort();
     if (key == 'p') selectSerialPort();
