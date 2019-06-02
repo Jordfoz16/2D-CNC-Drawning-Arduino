@@ -78,8 +78,8 @@ void setup(){
     delay(200);
 
     //Stepper motor setup
-    stepperX.setSpeed(1500);
-    stepperY.setSpeed(1500);
+    stepperX.setSpeed(500);
+    stepperY.setSpeed(500);
 
     startUpMessage();
 }
@@ -518,6 +518,7 @@ void penDown(){
 
 void jogPenUp(){
     zAxisDOWN++;
+    Serial.println(zAxisDOWN);
     penServo.write(zAxisDOWN);
     delay(lineDelay);
 }
